@@ -78,12 +78,12 @@ static int cmd_help(char *args) {
 }
 
 static int cmd_si(char *args) {
-    int step;
-	char *arg = strtok(NULL, " ");
-	if (arg == NULL) step = 1;
-    else sscanf(arg, "%d", &step);
-	cpu_exec(step);
-	return 0;
+    int step = 1;  // 默认步数为1
+    if (args != NULL) {
+        sscanf(args, "%d", &step);  // 如果提供了参数则解析
+    }
+    cpu_exec(step);  // 执行指定步数
+    return 0;
 }
 
 
