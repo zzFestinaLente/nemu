@@ -115,7 +115,7 @@ static int cmd_info(char *args) {
 	int i;
     if (args != NULL && args[0] == 'r') {
         // 遍历并打印 8 个通用寄存器的名称、16 进制和 10 进制值
-        for (i = 0; i < 8; i++) {
+        for (i = 0; i < 4; i++) {
             printf("%s\t  0x%08x\t  %d\n", regsl[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
         }
         // 打印 eip（指令指针）的值，同样是 16 进制和 10 进制
