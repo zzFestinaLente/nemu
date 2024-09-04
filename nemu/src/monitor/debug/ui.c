@@ -105,33 +105,23 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char *args) {
+	char *argn = strtok(args, " ");
+	char *arga0 = strtok(NULL, "");
 
 	int len;
-	int value;
-	int base_addr;
-    char *len_str = strtok(args, " ");
-    char *expr_str = strtok(NULL, "");
-	int i;
-    // 将长度字符串转化为整数
-    sscanf(len_str, "%d", &len);
-    // 解析表达式获取内存起始地址
-    base_addr = expr(expr_str, 0);
-    // 循环读取并输出内存数据
-    for (i = 0; i < len; i++) {
-        // 每4个字输出一个内存地址
-        if (i % 4 == 0) {
-            printf("0x%x: ", base_addr + 4 * i);
-        }
-        // 读取并打印每个地址的数据
-        value = swaddr_read(base_addr + 4 * i, sizeof(int));
-        printf("0x%08x  ", value);
-        // 每4个字换行，或在最后一个元素时换行
-        if ((i + 1) % 4 == 0 || i == len - 1) {
-            printf("\n");
-        }
-    }
+	sscanf(argn, "%d", &len);
 
-    return 0;
+	int ex=expr(arga0,0);
+	int i;
+	for (i = 0; i < len; i++) {
+		if(i%4==0) printf("0x%x: ",ex+4*i);
+		printf("0x%08x  ", swaddr_read(ex+4*i, sizeof(ex)));
+	    if(i%4==3||i==len-1){
+           printf("\n");
+		}
+	}
+
+	return 0;
 }
 
 void ui_mainloop() {
