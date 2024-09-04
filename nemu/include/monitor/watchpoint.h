@@ -12,7 +12,7 @@ typedef struct watchpoint {
 
 
 } WP;
-WP* new_wp(char*);  
+WP* new_wp(const char* cont); 
 int free_wp(int);   
 int judge_wp(); 
 #endif

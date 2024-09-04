@@ -127,7 +127,6 @@ static int cmd_info(char *args) {
 			printf("%d\t  %s\t  %d\t\n", Wang -> NO, Wang -> cont, Wang -> val);
 			Wang = Wang -> next;
 		}
-	return 0;
 	}
     return 0;
 }
