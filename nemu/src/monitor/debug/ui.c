@@ -38,6 +38,7 @@ static int cmd_q(char *args) {
 static int cmd_si(char *args);
 static int cmd_info(char *args);
 static int cmd_help(char *args);
+static int cmd_x(char *args);
 
 static struct {
 	char *name;
@@ -49,6 +50,7 @@ static struct {
 	{ "q", "Exit NEMU", cmd_q },
 	{ "si", "Run the cpu_exec function for a specified number of steps", cmd_si},
 	{ "info", "Display the current values of all registers or watchpoints", cmd_info},
+	{ "x", "Print address content", cmd_x},
 
 	/* TODO: Add more commands */
 
@@ -102,6 +104,35 @@ static int cmd_info(char *args) {
     return 0;
 }
 
+static int cmd_x(char *args) {
+
+	int len;
+	int value;
+	int base_addr;
+    char *len_str = strtok(args, " ");
+    char *expr_str = strtok(NULL, "");
+	int i;
+    // 将长度字符串转化为整数
+    sscanf(len_str, "%d", &len);
+    // 解析表达式获取内存起始地址
+    base_addr = expr(expr_str, 0);
+    // 循环读取并输出内存数据
+    for (i = 0; i < len; i++) {
+        // 每4个字输出一个内存地址
+        if (i % 4 == 0) {
+            printf("0x%x: ", base_addr + 4 * i);
+        }
+        // 读取并打印每个地址的数据
+        value = swaddr_read(base_addr + 4 * i, sizeof(int));
+        printf("0x%08x  ", value);
+        // 每4个字换行，或在最后一个元素时换行
+        if ((i + 1) % 4 == 0 || i == len - 1) {
+            printf("\n");
+        }
+    }
+
+    return 0;
+}
 
 void ui_mainloop() {
 	while(1) {
