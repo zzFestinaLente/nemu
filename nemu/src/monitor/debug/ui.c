@@ -6,7 +6,8 @@
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
-
+#define NR_WP 32
+static WP *head;
 void cpu_exec(uint32_t);
 
 /* We use the `readline' library to provide more flexibility to read from stdin. */
@@ -47,6 +48,17 @@ static int cmd_p(char *args) {
 	return 0;
 }
 
+static int cmd_w(char *args) {
+	if (args == NULL) {
+		printf ("No input!\n");
+		return 0;
+	}
+	new_wp(args);
+	printf("You set the watchpoint successfully!\n");
+
+	return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -59,6 +71,7 @@ static struct {
 	{ "info", "Display the current values of all registers or watchpoints", cmd_info},
 	{ "x", "Print address content", cmd_x},
 	{ "p", "Evaluate and display the result of an expression", cmd_p},
+	{ "w", "Insert watchpoints", cmd_w},
 	/* TODO: Add more commands */
 
 };
@@ -108,6 +121,14 @@ static int cmd_info(char *args) {
         // 打印 eip（指令指针）的值，同样是 16 进制和 10 进制
         printf("eip\t  0x%08x\t  %d\n", cpu.eip, cpu.eip);
     } 
+	if (args[0] == 'w') {
+		WP *Wang = head;
+		while(Wang != NULL) {
+			printf("%d\t  %s\t  %d\t\n", Wang -> NO, Wang -> cont, Wang -> val);
+			Wang = Wang -> next;
+		}
+	return 0;
+	}
     return 0;
 }
 
