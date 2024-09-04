@@ -36,6 +36,7 @@ static int cmd_q(char *args) {
 	return -1;
 }
 static int cmd_si(char *args);
+static int cmd_info(char *args);
 static int cmd_help(char *args);
 
 static struct {
@@ -47,6 +48,7 @@ static struct {
 	{ "c", "Continue the execution of the program", cmd_c },
 	{ "q", "Exit NEMU", cmd_q },
 	{ "si", "Run the cpu_exec function for a specified number of steps", cmd_si},
+	{ "info", "Display the current values of all registers or watchpoints", cmd_info},
 
 	/* TODO: Add more commands */
 
@@ -83,6 +85,20 @@ static int cmd_si(char *args) {
         sscanf(args, "%d", &step);  // 如果提供了参数则解析
     }
     cpu_exec(step);  // 执行指定步数
+    return 0;
+}
+
+static int cmd_info(char *args) {
+    // 如果有参数传入且第一个字符为 'r'，打印寄存器的值
+	int i;
+    if (args != NULL && args[0] == 'r') {
+        // 遍历并打印 8 个通用寄存器的名称、16 进制和 10 进制值
+        for (i = 0; i < 8; i++) {
+            printf("%s\t  0x%08x\t  %d\n", regsl[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
+        }
+        // 打印 eip（指令指针）的值，同样是 16 进制和 10 进制
+        printf("eip\t  0x%08x\t  %d\n", cpu.eip, cpu.eip);
+    } 
     return 0;
 }
 
