@@ -103,6 +103,7 @@ static int cmd_info(char *args) {
     } 
     return 0;
 }
+
 static int cmd_x(char *args) {
     char *arg1 = strtok(NULL, " ");  // 提取第一个参数（长度）
     char *arg2 = strtok(NULL, " ");  // 提取第二个参数（地址）
