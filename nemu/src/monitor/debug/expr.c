@@ -160,26 +160,7 @@ int prior(int ty) {
 	}
 	return 0;
 }
-// int do_op(int p, int q) {
-// 	int op0 = 0;
-// 	int j, left = 0, cha0 = 0;
-// 	for (j = p; j <= q; j++) {
-// 		if (tokens[j].type == '(')  left++;
-// 		else if (tokens[j].type == ')')  left--;
-// 		else if (left == 0 && tokens[j].type != DECNUM && tokens[j].type != HEXNUM && tokens[j].type != ADDRESS && tokens[j].type != REGISTER) {
-// 			if (cha0 == 0) {
-// 				op0 = j;
-// 				cha0 = 1;
-// 			}
-// 			else {
-// 				if (prior(tokens[op0].type) <= prior(tokens[j].type)) {
-// 					op0 = j;
-// 				}
-// 			}
-// 		}
-// 	}
-// 	return op0;
-// }
+
 int eval (int p, int q) {
 	int result;
 	if (p > q) {
@@ -214,20 +195,61 @@ int eval (int p, int q) {
 		int op = 0;
 		int j, left = 0, cha0 = 0;
 		for (j = p; j <= q; j++) {
-			if (tokens[j].type == '(')  left++;
-			else if (tokens[j].type == ')')  left--;
+			if (tokens[j].type == '(') left++;
+			else if (tokens[j].type == ')') left--;
 			else if (left == 0 && tokens[j].type != DECNUM && tokens[j].type != HEXNUM && tokens[j].type != ADDRESS && tokens[j].type != REGISTER) {
+				int current_priority = 0;
+				switch (tokens[j].type) {
+					case '(': case ')': current_priority = 1; break;
+					case '!': case DEREF: case NEGT: current_priority = 2; break;
+					case '*': case '/': current_priority = 3; break;
+					case '+': case '-': current_priority = 4; break;
+					case EQ: case NEQ: current_priority = 5; break;
+					case AND: current_priority = 6; break;
+					case OR: current_priority = 7; break;
+					default: current_priority = 0; break;
+				}
+				
 				if (cha0 == 0) {
 					op = j;
 					cha0 = 1;
-				}
-				else {
-					if (prior(tokens[op].type) <= prior(tokens[j].type)) {
+				} else {
+					int op_priority = 0;
+					switch (tokens[op].type) {
+						case '(': case ')': op_priority = 1; break;
+						case '!': case DEREF: case NEGT: op_priority = 2; break;
+						case '*': case '/': op_priority = 3; break;
+						case '+': case '-': op_priority = 4; break;
+						case EQ: case NEQ: op_priority = 5; break;
+						case AND: op_priority = 6; break;
+						case OR: op_priority = 7; break;
+						default: op_priority = 0; break;
+					}
+					
+					if (op_priority <= current_priority) {
 						op = j;
 					}
 				}
 			}
 		}
+	// else {
+	// 	int op = 0;
+	// 	int j, left = 0, cha0 = 0;
+	// 	for (j = p; j <= q; j++) {
+	// 		if (tokens[j].type == '(')  left++;
+	// 		else if (tokens[j].type == ')')  left--;
+	// 		else if (left == 0 && tokens[j].type != DECNUM && tokens[j].type != HEXNUM && tokens[j].type != ADDRESS && tokens[j].type != REGISTER) {
+	// 			if (cha0 == 0) {
+	// 				op = j;
+	// 				cha0 = 1;
+	// 			}
+	// 			else {
+	// 				if (prior(tokens[op].type) <= prior(tokens[j].type)) {
+	// 					op = j;
+	// 				}
+	// 			}
+	// 		}
+	// 	}
 
 		//printf("&&&&&&&&&&&&&&&&&&&%d\n", op);
 		if (tokens[op].type == '!' || tokens[op].type == DEREF || tokens[op].type == NEGT) {
