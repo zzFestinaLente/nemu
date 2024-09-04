@@ -94,7 +94,7 @@ int free_wp(int number) {
 
 int judge_wp() {
     if (active_list == NULL) {
-        fprintf(stderr, "No watchpoints to check!\n");
+        // fprintf(stderr, "No watchpoints to check!\n");
         return 0; // 没有观察点，返回 0
     }
 
@@ -113,7 +113,7 @@ int judge_wp() {
         
         if (result != current->value) {
             // 如果表达式的计算结果与观察点的值不一致，打印提示信息
-            printf("Hint: watchpoint %d at address 0x%08x, expr = %s\n", current->NO, expr("$eip", &success), current->content);
+            printf("Hint watchpoint %d at address 0x%08x\n", current->NO, expr("$eip", &success));
             current->value = result; // 更新观察点的值
             status = -1; // 标记有观察点的值发生了变化
         }

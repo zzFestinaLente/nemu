@@ -102,12 +102,12 @@ static int cmd_help(char *args) {
 }
 
 static int cmd_si(char *args) {
-    int step = 1;  // 默认步数为1
-    if (args != NULL) {
-        sscanf(args, "%d", &step);  // 如果提供了参数则解析
-    }
-    cpu_exec(step);  // 执行指定步数
-    return 0;
+    int step;
+	char *arg = strtok(NULL, " ");
+	if (arg == NULL) step = 1;
+    else sscanf(arg, "%d", &step);
+	cpu_exec(step);
+	return 0;
 }
 
 static int cmd_info(char *args) {
@@ -116,10 +116,11 @@ static int cmd_info(char *args) {
     if (args != NULL && args[0] == 'r') {
         // 遍历并打印 8 个通用寄存器的名称、16 进制和 10 进制值
         for (i = 0; i < 4; i++) {
-            printf("%s\t  0x%08x\t  %d\n", regsl[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
-        }
+            // printf("%s\t  0x%08x\t  %d\n", regsl[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
+        	printf("$%s\t  0x%08x\t  %d\n", regsl[i], cpu.gpr[i]._32, cpu.gpr[i]._32);
+		}
         // 打印 eip（指令指针）的值，同样是 16 进制和 10 进制
-        printf("eip\t  0x%08x\t  %d\n", cpu.eip, cpu.eip);
+        // printf("eip\t  0x%08x\t  %d\n", cpu.eip, cpu.eip);
     } 
 	if (args[0] == 'w') {
 		WP *Wang = head;
@@ -148,10 +149,6 @@ static int cmd_x(char *args) {
 
         // 遍历读取内存
         for (i = 0; i < n; i++) {
-            if (i % 4 == 0) {
-                printf("0x%08x: ", addr);  // 输出地址
-            }
-
             // 读取并输出地址处的 4 字节内容
             printf("0x%08x ", swaddr_read(addr, 4));
             addr += 4;
@@ -159,11 +156,6 @@ static int cmd_x(char *args) {
             if (i % 4 == 3) {
                 printf("\n");  // 每 4 个输出换行
             }
-        }
-
-        // 如果最后没有正好换行，手动换行
-        if (n % 4 != 0) {
-            printf("\n");
         }
     } 
     else {
