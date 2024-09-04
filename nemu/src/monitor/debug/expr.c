@@ -7,8 +7,11 @@
 #include <regex.h>
 
 enum {
-	NOTYPE = 256, EQ
-
+	NOTYPE = 256, 
+	//added token type
+	EQ,AND,OR,
+	ADDRESS,DEREF,NEGT,
+	NEQ,REGISTER,HEXNUM,DECNUM
 	/* TODO: Add more token types */
 
 };
@@ -22,9 +25,23 @@ static struct rule {
 	 * Pay attention to the precedence level of different rules.
 	 */
 
-	{" +",	NOTYPE},				// spaces
-	{"\\+", '+'},					// plus
-	{"==", EQ}						// equal
+	{" +",  NOTYPE},              // 匹配一个或多个空格（忽略）
+    {"\\+", '+'},                 // 匹配 '+' 运算符
+    {"==", EQ},                   // 匹配等于运算符 '=='
+
+    {"[0-9]+", DECNUM},          // 匹配十进制数字（一个或多个数字）
+    {"\\*0x[0-9A-Fa-f]+", ADDRESS}, // 匹配十六进制地址（例如 *0x1A3F）
+    {"&&", AND},                  // 匹配逻辑与运算符 '&&'
+    {"\\|\\|", OR},               // 匹配逻辑或运算符 '||'
+    {"!=", NEQ},                  // 匹配不等于运算符 '!='
+    {"\\!", '!'},                 // 匹配逻辑非运算符 '!'
+    {"\\$[a-zA-Z]+", REGISTER},   // 匹配寄存器名称（例如 $eax）
+    {"0x[0-9A-Fa-f]+", HEXNUM},  // 匹配十六进制数字（例如 0x1A3F）
+    {"\\-", '-'},                 // 匹配 '-' 运算符
+    {"\\*", '*'},                 // 匹配 '*' 运算符（乘法）
+    {"\\/", '/'},                 // 匹配 '/' 运算符（除法）
+    {"\\(", '('},                 // 匹配左括号 '('
+    {"\\)", ')'},                 // 匹配右括号 ')'
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -78,8 +95,16 @@ static bool make_token(char *e) {
 				 * of tokens, some extra actions should be performed.
 				 */
 
+				// switch(rules[i].token_type) {
+				// 	default: panic("please implement me");
+				// }
 				switch(rules[i].token_type) {
-					default: panic("please implement me");
+					case NOTYPE:
+					     break;
+					default: 
+					     tokens[nr_token].type = rules[i].token_type;
+					     sprintf (tokens[nr_token].str, "%.*s", substr_len, substr_start);
+					     nr_token++;
 				}
 
 				break;
@@ -90,8 +115,15 @@ static bool make_token(char *e) {
 			printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
 			return false;
 		}
+		int m;
+		for (m = 0; m < nr_token; m++) {
+		if (tokens[m].type == '*' &&( m == 0 || (tokens[m - 1].type != DECNUM && tokens[m - 1].type != HEXNUM && tokens[m - 1].type != REGISTER && tokens[m - 1].type != ')')))
+			tokens[m].type = DEREF;
+		if (tokens[m].type == '-' &&( m == 0 || (tokens[m - 1].type != DECNUM && tokens[m - 1].type != HEXNUM && tokens[m - 1].type != REGISTER && tokens[m - 1].type != ')')))
+			tokens[m].type = NEGT;
+		}
 	}
-
+	
 	return true; 
 }
 
