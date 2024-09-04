@@ -19,26 +19,7 @@ void init_wp_pool() {  //init_wp_pool()函数会对head free两个链表进行�
 }
 #define MAX_CONT_SIZE 256  // 根据需要调整大小
 
-// WP* new_wp(char *cont) {
-// 	if (free_ == NULL)  assert(0);
-// 	WP *roy = free_;
-// 	free_ = free_ -> next;
-// 	roy -> next = NULL;
-// 	bool success = true;
-// 	strcpy(roy -> cont, cont);  //表达式
-// 	roy -> val = expr(roy -> cont, &success); //表达式的值
-// 	if (head == NULL){
-// 		head = roy;
-// 	}
-// 	else if (head != NULL) {
-// 		WP *p = head;
-// 		while (p -> next != NULL) {
-// 			p = p -> next;
-// 		}
-// 		p -> next = roy;
-// 	}
-// 	return roy;
-// }
+
 WP* new_wp(char* cont) {
     if (free_ == NULL) {
         fprintf(stderr, "No available watchpoints!\n");
@@ -79,32 +60,7 @@ WP* new_wp(char* cont) {
 
     return roy;
 }
-// int free_wp(int numb) {
-// 	WP *p = head;
-// 	WP *q = head -> next;
-// 	if (head == NULL) {
-// 		printf("No input!\n");
-// 		return 0;
-// 	}
-// 	else if (numb == head -> NO) {
-// 		head = head -> next;
-// 	}
-// 	else {
-// 		while (numb != q -> NO && q -> next != NULL) {
-// 			p = p -> next;
-// 			q = q -> next;
-// 		}
-// 		if (q -> next == NULL) {
-// 			printf("No such watchpoint!\n");
-// 			return 0;
-// 		}
-// 		else p -> next = q -> next;	
-// 	}
-// 	WP *wp = q;
-// 	wp -> next = free_;
-// 	free_ = wp;
-// 	return 1;
-// }
+
 int free_wp(int numb) {
     if (head == NULL) {
         fprintf(stderr, "No watchpoints to free!\n");
@@ -137,23 +93,7 @@ int free_wp(int numb) {
 }
 
 /* TODO: Implement the functionality of watchpoint */
-// int judge_wp() {
-// 	WP *test = head;
-// 	bool success = true;
-// 	int resl = 0, j0 = 0;
-// 	while (test != NULL) {
-// 		resl = expr(test -> cont, &success);
-// 		if (resl != test -> val) {
-// 			printf("Hint watchpoint %d at address 0x%08x, expr = %s\n", test -> NO, expr("$eip", &success), test -> cont);
-// 			printf("old value = 0x%08x\n", test -> val);
-// 			printf("new value = 0x%08x\n", resl);
-// 			test -> val = resl;
-// 			j0 = -1;
-// 		}
-// 		test = test -> next;
-// 	}
-// 	return j0;
-// }
+
 int judge_wp() {
     if (head == NULL) {
         fprintf(stderr, "No watchpoints to check!\n");
