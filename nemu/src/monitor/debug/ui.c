@@ -105,55 +105,53 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char *args) {
-	char *arg = strtok(NULL, " ");
-	int n;
-	swaddr_t addr;
-	int i;
+    char *arg1 = strtok(NULL, " ");  // 提取第一个参数（长度）
+    char *arg2 = strtok(NULL, " ");  // 提取第二个参数（地址）
 
-	if(arg != NULL) {
-		sscanf(arg, "%d", &n);
+    int n;
+    swaddr_t addr;
+    int i;
 
-		bool success;
-		addr = expr(arg + strlen(arg) + 1, &success);
-		if(success) { 
-			for(i = 0; i < n; i ++) {
-				if(i % 4 == 0) {
-					printf("0x%08x: ", addr);
-				}
+    if (arg1 != NULL && arg2 != NULL) {
+        // 解析第一个参数（内存读取长度）
+        sscanf(arg1, "%d", &n);
 
-				printf("0x%08x ", swaddr_read(addr, 4));
-				addr += 4;
-				if(i % 4 == 3) {
-					printf("\n");
-				}
-			}
-			printf("\n");
-		}
-		else { printf("Bad expression\n"); }
+        // 解析第二个参数（地址），并使用 expr 函数解析表达式
+        bool success;
+        addr = expr(arg2, &success);
 
-	}
-	return 0;
+        if (success) { 
+            // 遍历读取内存
+            for (i = 0; i < n; i++) {
+                if (i % 4 == 0) {
+                    printf("0x%08x: ", addr);  // 输出地址
+                }
+
+                // 读取并输出地址处的 4 字节内容
+                printf("0x%08x ", swaddr_read(addr, 4));
+                addr += 4;
+
+                if (i % 4 == 3) {
+                    printf("\n");  // 每 4 个输出换行
+                }
+            }
+
+            // 如果最后没有正好换行，手动换行
+            if (n % 4 != 0) {
+                printf("\n");
+            }
+        } 
+        else { 
+            printf("Bad expression\n");  // 地址解析失败
+        }
+    } 
+    else {
+        printf("Invalid arguments\n");  // 参数不足
+    }
+
+    return 0;
 }
 
-// static int cmd_x(char *args) {
-// 	char *argn = strtok(NULL, " ");
-// 	char *arga0 = strtok(NULL, "");
-
-// 	int len;
-// 	sscanf(argn, "%d", &len);
-
-// 	int ex=expr(arga0,0);
-// 	int i;
-// 	for (i = 0; i < len; i++) {
-// 		if(i%4==0) printf("0x%x: ",ex+4*i);
-// 		printf("0x%08x  ", swaddr_read(ex+4*i, sizeof(ex)));
-// 	    if(i%4==3||i==len-1){
-//            printf("\n");
-// 		}
-// 	}
-
-// 	return 0;
-// }
 
 void ui_mainloop() {
 	while(1) {
