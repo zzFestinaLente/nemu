@@ -235,7 +235,82 @@ int eval (int p, int q) {
 	}
 	return 0;
 }
+int evaluate(int p, int q) {
+	int result;
 
+	if (p > q) {
+		assert(0);
+	} else if (p == q) {
+		if (tokens[p].type == REGISTER) {
+			if (strcmp(tokens[p].str + 1, "eip") == 0) return cpu.eip;
+			int k;
+			for (k = 0; k < 8; k++) {
+				if (strcmp(tokens[p].str + 1, regsl[k]) == 0)
+					return cpu.gpr[k]._32;
+			}
+		}
+		if (tokens[p].type == HEXNUM) {
+			sscanf(tokens[p].str, "%x", &result);
+			return result;
+		}
+		if (tokens[p].type == DECNUM) {
+			sscanf(tokens[p].str, "%d", &result);
+			return result;
+		}
+		if (tokens[p].type == ADDRESS) {
+			sscanf(tokens[p].str, "%x", &result);
+			return swaddr_read(result, 4);
+		}
+	} else if (check_parentheses(p, q)) {
+		return evaluate(p + 1, q - 1);
+	} else {
+		int op = -1;
+		int min_priority = 10;
+		int left = 0;
+		int j;
+		for (j = p; j <= q; j++) {
+			if (tokens[j].type == '(') left++;
+			else if (tokens[j].type == ')') left--;
+			else if (left == 0) {
+				int priority = 10;
+				switch (tokens[j].type) {
+					case '!': case DEREF: case NEGT: priority = 2; break;
+					case '*': case '/': priority = 3; break;
+					case '+': case '-': priority = 4; break;
+					case EQ: case NEQ: priority = 5; break;
+					case AND: priority = 6; break;
+					case OR: priority = 7; break;
+				}
+				if (priority <= min_priority) {
+					min_priority = priority;
+					op = j;
+				}
+			}
+		}
+
+		if (tokens[op].type == '!' || tokens[op].type == DEREF || tokens[op].type == NEGT) {
+			int val = evaluate(op + 1, q);
+			if (tokens[op].type == '!') return !val;
+			if (tokens[op].type == DEREF) return swaddr_read(val, 4);
+			if (tokens[op].type == NEGT) return -val;
+		} else {
+			int val1 = evaluate(p, op - 1);
+			int val2 = evaluate(op + 1, q);
+			switch (tokens[op].type) {
+				case '+': return val1 + val2;
+				case '-': return val1 - val2;
+				case '*': return val1 * val2;
+				case '/': return val1 / val2;
+				case EQ: return val1 == val2;
+				case NEQ: return val1 != val2;
+				case AND: return val1 && val2;
+				case OR: return val1 || val2;
+				default: assert(0);
+			}
+		}
+	}
+	return 0;
+}
 
 uint32_t expr(char *e, bool *success) {
 	if(!make_token(e)) {
@@ -245,7 +320,7 @@ uint32_t expr(char *e, bool *success) {
 
 	/* TODO: Insert codes to evaluate the expression. */
 	*success = true;
-	return eval(0, nr_token - 1);
+	return evaluate(0, nr_token - 1);
 	// panic("please implement me");
 	// return 0;
 }
