@@ -158,7 +158,7 @@ int get_priority(int type);
 int handle_unary_op(int type, int start, int end);
 int calculate_result(int type, int val1, int val2);
 
-int eval(int p, int q) {
+int evaluate(int p, int q) {
     int result;
     
     if (p > q) {
@@ -189,7 +189,7 @@ int eval(int p, int q) {
         }
 		
     } else if (check_parentheses(p, q)) {
-        return eval(p + 1, q - 1);
+        return evaluate(p + 1, q - 1);
     } else {
         int op = 0, left = 0, cha0 = 0, j;
         for (j = p; j <= q; j++) {
@@ -212,8 +212,8 @@ int eval(int p, int q) {
             return handle_unary_op(tokens[op].type, op + 1, q);
         }
 
-        int val1 = eval(p, op - 1);
-        int val2 = eval(op + 1, q);
+        int val1 = evaluate(p, op - 1);
+        int val2 = evaluate(op + 1, q);
 
         return calculate_result(tokens[op].type, val1, val2);
     }
@@ -235,9 +235,9 @@ int get_priority(int type) {
 
 int handle_unary_op(int type, int start, int end) {
     switch (type) {
-        case '!': return !eval(start, end);
-        case DEREF: return swaddr_read(eval(start, end), 4);
-        case NEGT: return -eval(start, end);
+        case '!': return !evaluate(start, end);
+        case DEREF: return swaddr_read(evaluate(start, end), 4);
+        case NEGT: return -evaluate(start, end);
         default: assert(0); return 0;
     }
 }
@@ -264,9 +264,9 @@ uint32_t expr(char *e, bool *success) {
 		return 0;
 	}
 
-	/* TODO: Insert codes to evaluate the expression. */
+	/* TODO: Insert codes to evaluateuate the expression. */
 	*success = true;
-	return eval(0, nr_token - 1);
+	return evaluate(0, nr_token - 1);
 	// panic("please implement me");
 	// return 0;
 }
