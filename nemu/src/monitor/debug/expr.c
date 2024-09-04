@@ -25,22 +25,22 @@ static struct rule {
 	 * Pay attention to the precedence level of different rules.
 	 */
 
-	{" +",	NOTYPE},				// spaces
-	{"\\+", '+'},					// plus
-	{"==", EQ},						// equal
-	{"\\-",'-'},                    //reduce
-    {"\\*",'*'},                    //multiply
-	{"\\/",'/'},                    //divide
-	{"\\(",'('},                    //left(
-	{"\\)",')'},                    //right)
-	{"&&",AND},                    //logical and
-	{"\\|\\|",OR},                  //logical or
-	{"!=",NEQ},                     //not equal
-	{"\\!",'!'},                    //logical not
-	{"\\$[a-zA-Z]+",REGISTER},      //register
-	{"0x[0-9A-Fa-f]+",HEXNUM},      //16nums
-	{"[0-9]+",DECNUM},              //10nums
-	{"\\*0x[0-9A-Fa-f]+",ADDRESS}  //address
+	{" +",	NOTYPE},                // 匹配空格，忽略
+	{"\\+", '+'},                   // 加法运算符 +
+	{"\\-", '-'},                   // 减法运算符 -
+	{"\\*", '*'},                   // 乘法运算符 *
+	{"\\/", '/'},                   // 除法运算符 /
+	{"\\(", '('},                   // 左括号 (
+	{"\\)", ')'},                   // 右括号 )
+	{"==", EQ},                     // 相等 ==
+	{"!=", NEQ},                    // 不等于 !=
+	{"&&", AND},                    // 逻辑与 &&
+	{"\\|\\|", OR},                 // 逻辑或 ||
+	{"\\!", '!' },                  // 逻辑非 !
+	{"\\$[a-zA-Z]+", REGISTER},     // 寄存器名，如 $eax, $ebx
+	{"0x[0-9A-Fa-f]+", HEXNUM},     // 16进制数字，如 0x1A3F
+	{"[0-9]+", DECNUM},             // 10进制数字，如 123
+	{"\\*0x[0-9A-Fa-f]+", ADDRESS}, // 地址解引用，*0x1234
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -72,58 +72,61 @@ typedef struct token {
 Token tokens[32];
 int nr_token;
 
+// 用于判断前一个token是否为数字或寄存器的辅助函数
+static bool is_prev_token_num_or_reg(int m) {
+    return (tokens[m - 1].type == DECNUM || tokens[m - 1].type == HEXNUM || tokens[m - 1].type == REGISTER || tokens[m - 1].type == ')');
+}
+
 static bool make_token(char *e) {
-	int position = 0;
-	int i;
-	regmatch_t pmatch;
-	
-	nr_token = 0;
+    int position = 0;
+    regmatch_t pmatch;
+    
+    nr_token = 0;
 
-	while(e[position] != '\0') {
-		/* Try all rules one by one. */
-		for(i = 0; i < NR_REGEX; i ++) {
-			if(regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
-				char *substr_start = e + position;
-				int substr_len = pmatch.rm_eo;
+    while (e[position] != '\0') {
+        bool matched = false;
 
-				Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
-				position += substr_len;
+        // 尝试所有正则表达式规则
+		int i;
+        for (i = 0; i < NR_REGEX; i++) {
+            if (regexec(&re[i], e + position, 1, &pmatch, 0) == 0 && pmatch.rm_so == 0) {
+                int substr_len = pmatch.rm_eo;
+                char *substr_start = e + position;
 
-				/* TODO: Now a new token is recognized with rules[i]. Add codes
-				 * to record the token in the array `tokens'. For certain types
-				 * of tokens, some extra actions should be performed.
-				 */
+                Log("match rules[%d] = \"%s\" at position %d with len %d: %.*s", i, rules[i].regex, position, substr_len, substr_len, substr_start);
 
-				// switch(rules[i].token_type) {
-				// 	default: panic("please implement me");
-				// }
-				switch(rules[i].token_type) {
-					case NOTYPE:
-					     break;
-					default: 
-					     tokens[nr_token].type = rules[i].token_type;
-					     sprintf (tokens[nr_token].str, "%.*s", substr_len, substr_start);
-					     nr_token++;
-				}
+                // 记录匹配到的token并进行必要的字符串处理
+                if (rules[i].token_type != NOTYPE) {
+                    Token *token = &tokens[nr_token++];
+                    token->type = rules[i].token_type;
+                    snprintf(token->str, sizeof(token->str), "%.*s", substr_len, substr_start);
+                }
 
-				break;
-			}
-		}
+                position += substr_len;
+                matched = true;
+                break;
+            }
+        }
 
-		if(i == NR_REGEX) {
-			printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
-			return false;
-		}
-		int m;
-		for (m = 0; m < nr_token; m++) {
-		if (tokens[m].type == '*' &&( m == 0 || (tokens[m - 1].type != DECNUM && tokens[m - 1].type != HEXNUM && tokens[m - 1].type != REGISTER && tokens[m - 1].type != ')')))
-			tokens[m].type = DEREF;
-		if (tokens[m].type == '-' &&( m == 0 || (tokens[m - 1].type != DECNUM && tokens[m - 1].type != HEXNUM && tokens[m - 1].type != REGISTER && tokens[m - 1].type != ')')))
-			tokens[m].type = NEGT;
-		}
-	}
-	
-	return true; 
+        // 如果没有规则匹配，返回false
+        if (!matched) {
+            printf("no match at position %d\n%s\n%*.s^\n", position, e, position, "");
+            return false;
+        }
+    }
+
+    // 遍历token数组，处理特殊情况：解引用(*)和负号(-)
+	int m;
+    for (m = 0; m < nr_token; m++) {
+        Token *token = &tokens[m];
+        if (token->type == '*' && (m == 0 || !is_prev_token_num_or_reg(m))) {
+            token->type = DEREF;
+        } else if (token->type == '-' && (m == 0 || !is_prev_token_num_or_reg(m))) {
+            token->type = NEGT;
+        }
+    }
+
+    return true;
 }
 
 bool check_parentheses(int p, int q) {
@@ -133,7 +136,6 @@ bool check_parentheses(int p, int q) {
     if (tokens[p].type != '(' || tokens[q].type != ')') {
         return false;
     }
-
     // 遍历从 p+1 到 q-1 的部分
 	int i;
     for (i = p + 1; i < q; i++) {
@@ -147,7 +149,6 @@ bool check_parentheses(int p, int q) {
             }
         }
     }
-
     // 检查左括号和右括号的数量是否相等
     return leftp == 0;
 }
