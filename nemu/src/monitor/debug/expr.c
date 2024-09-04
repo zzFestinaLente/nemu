@@ -127,118 +127,32 @@ static bool make_token(char *e) {
 }
 
 bool check_parentheses(int p, int q) {
-	int leftp = 0;
+    int leftp = 0;
+
+    // 首先判断开头和结尾的括号是否匹配
+    if (tokens[p].type != '(' || tokens[q].type != ')') {
+        return false;
+    }
+
+    // 遍历从 p+1 到 q-1 的部分
 	int i;
-	if (tokens[p].type != '(' || tokens[q].type != ')') {
-		return false;
-	}
-	else {
-		for (i = p; i <= q; i++) {
-			if (leftp == 0 && i != q && i != p)  return false;
-			if (tokens[i].type == '(')  leftp++;
-			if (tokens[i].type == ')')  leftp--; 
-		}
-		if (leftp == 0)  return true;
-		return false;
-	}
+    for (i = p + 1; i < q; i++) {
+        if (tokens[i].type == '(') {
+            leftp++;
+        } else if (tokens[i].type == ')') {
+            leftp--;
+            // 如果左括号数量少于右括号，说明不匹配
+            if (leftp < 0) {
+                return false;
+            }
+        }
+    }
+
+    // 检查左括号和右括号的数量是否相等
+    return leftp == 0;
 }
 
 
-// int eval (int p, int q) {
-// 	int result;
-// 	if (p > q) {
-// 		assert(0);
-// 	}
-// 	else if (p == q) {
-// 		if (tokens[p].type == REGISTER) {
-// 			if (strcmp(tokens[p].str+1, "eip") == 0)  return cpu.eip;
-// 			int k;
-// 			for (k = 0; k < 8; k++) {
-// 				if (strcmp(tokens[p].str+1, regsl[k]) == 0)
-// 					return cpu.gpr[k]._32;
-// 			}
-// 		}
-// 		if (tokens[p].type == HEXNUM) {
-// 			sscanf(tokens[p].str, "%x", &result);
-// 			return result;
-// 		}
-// 		if (tokens[p].type == DECNUM) {
-// 			sscanf(tokens[p].str, "%d", &result);
-// 			return result;
-// 		}
-// 		if (tokens[p].type == ADDRESS) {
-// 			sscanf(tokens[p].str, "%x", &result);
-// 			return swaddr_read(result, 4);
-// 		}
-// 	}
-// 	else if (check_parentheses(p, q) == true) {
-// 		return eval(p + 1, q - 1);
-// 	}
-// 	else {
-// 		int op = 0;
-// 		int j, left = 0, cha0 = 0;
-// 		for (j = p; j <= q; j++) {
-// 			if (tokens[j].type == '(') left++;
-// 			else if (tokens[j].type == ')') left--;
-// 			else if (left == 0 && tokens[j].type != DECNUM && tokens[j].type != HEXNUM && tokens[j].type != ADDRESS && tokens[j].type != REGISTER) {
-// 				int current_priority = 0;
-// 				switch (tokens[j].type) {
-// 					case '(': case ')': current_priority = 1; break;
-// 					case '!': case DEREF: case NEGT: current_priority = 2; break;
-// 					case '*': case '/': current_priority = 3; break;
-// 					case '+': case '-': current_priority = 4; break;
-// 					case EQ: case NEQ: current_priority = 5; break;
-// 					case AND: current_priority = 6; break;
-// 					case OR: current_priority = 7; break;
-// 					default: current_priority = 0; break;
-// 				}
-				
-// 				if (cha0 == 0) {
-// 					op = j;
-// 					cha0 = 1;
-// 				} else {
-// 					int op_priority = 0;
-// 					switch (tokens[op].type) {
-// 						case '(': case ')': op_priority = 1; break;
-// 						case '!': case DEREF: case NEGT: op_priority = 2; break;
-// 						case '*': case '/': op_priority = 3; break;
-// 						case '+': case '-': op_priority = 4; break;
-// 						case EQ: case NEQ: op_priority = 5; break;
-// 						case AND: op_priority = 6; break;
-// 						case OR: op_priority = 7; break;
-// 						default: op_priority = 0; break;
-// 					}
-					
-// 					if (op_priority <= current_priority) {
-// 						op = j;
-// 					}
-// 				}
-// 			}
-// 		}
-
-
-// 		//printf("&&&&&&&&&&&&&&&&&&&%d\n", op);
-// 		if (tokens[op].type == '!' || tokens[op].type == DEREF || tokens[op].type == NEGT) {
-// 			if (tokens[op].type == '!')  return !eval(op + 1, q);
-// 			if (tokens[op].type == DEREF)  return swaddr_read(eval(op + 1, q), 4);
-// 			if (tokens[op].type == NEGT)  return -eval(op + 1, q);
-// 		}
-// 		int val1 = eval(p, op - 1);
-// 		int val2 = eval(op + 1, q);
-//   		switch (tokens[op].type) {
-// 			case '+': return val1 + val2;
-// 			case '-': return val1 - val2;
-// 			case '*': return val1 * val2;
-// 			case '/': return val1 / val2;
-// 			case EQ: return val1 == val2;
-// 			case AND: return val1 && val2;
-// 			case OR: return val1 || val2;
-// 			case NEQ: return val1 != val2;
-// 			default: assert(0);
-// 		}
-// 	}
-// 	return 0;
-// }
 int get_priority(int type);
 int handle_unary_op(int type, int start, int end);
 int calculate_result(int type, int val1, int val2);
@@ -248,10 +162,14 @@ int eval(int p, int q) {
     
     if (p > q) {
         assert(0);
-    } else if (p == q) {
+		return 0;
+    } 
+	if (p == q) {
         switch (tokens[p].type) {
             case REGISTER:
-                if (strcmp(tokens[p].str + 1, "eip") == 0) return cpu.eip;
+                if (strcmp(tokens[p].str + 1, "eip") == 0) {
+					return cpu.eip;
+				}
                 int k;
                 for (k = 0; k < 8; k++) {
                     if (strcmp(tokens[p].str + 1, regsl[k]) == 0)
@@ -268,6 +186,7 @@ int eval(int p, int q) {
                 sscanf(tokens[p].str, "%x", &result);
                 return swaddr_read(result, 4);
         }
+		
     } else if (check_parentheses(p, q)) {
         return eval(p + 1, q - 1);
     } else {
@@ -324,15 +243,16 @@ int handle_unary_op(int type, int start, int end) {
 
 int calculate_result(int type, int val1, int val2) {
     switch (type) {
+		case EQ: return val1 == val2;
+        case NEQ: return val1 != val2;
+        case AND: return val1 && val2;
+        case OR: return val1 || val2;
         case '+': return val1 + val2;
         case '-': return val1 - val2;
         case '*': return val1 * val2;
         case '/': return val1 / val2;
-        case EQ: return val1 == val2;
-        case NEQ: return val1 != val2;
-        case AND: return val1 && val2;
-        case OR: return val1 || val2;
-        default: assert(0); return 0;
+        default: assert(0); 
+		return 0;
     }
 }
 
@@ -345,7 +265,6 @@ uint32_t expr(char *e, bool *success) {
 
 	/* TODO: Insert codes to evaluate the expression. */
 	*success = true;
-	// return evaluate(0, nr_token - 1);
 	return eval(0, nr_token - 1);
 	// panic("please implement me");
 	// return 0;
