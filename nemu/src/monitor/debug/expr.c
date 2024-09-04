@@ -25,23 +25,22 @@ static struct rule {
 	 * Pay attention to the precedence level of different rules.
 	 */
 
-	{" +",  NOTYPE},              // 匹配一个或多个空格（忽略）
-    {"\\+", '+'},                 // 匹配 '+' 运算符
-    {"==", EQ},                   // 匹配等于运算符 '=='
-
-    {"[0-9]+", DECNUM},          // 匹配十进制数字（一个或多个数字）
-    {"\\*0x[0-9A-Fa-f]+", ADDRESS}, // 匹配十六进制地址（例如 *0x1A3F）
-    {"&&", AND},                  // 匹配逻辑与运算符 '&&'
-    {"\\|\\|", OR},               // 匹配逻辑或运算符 '||'
-    {"!=", NEQ},                  // 匹配不等于运算符 '!='
-    {"\\!", '!'},                 // 匹配逻辑非运算符 '!'
-    {"\\$[a-zA-Z]+", REGISTER},   // 匹配寄存器名称（例如 $eax）
-	{"0[xX][0-9a-fA-F]+", HEXNUM},  // 匹配十六进制数字（例如 0x1A3F）
-    {"\\-", '-'},                 // 匹配 '-' 运算符
-    {"\\*", '*'},                 // 匹配 '*' 运算符（乘法）
-    {"\\/", '/'},                 // 匹配 '/' 运算符（除法）
-    {"\\(", '('},                 // 匹配左括号 '('
-    {"\\)", ')'},                 // 匹配右括号 ')'
+	{" +",	NOTYPE},				// spaces
+	{"\\+", '+'},					// plus
+	{"==", EQ},						// equal
+	{"\\-",'-'},                    //reduce
+    {"\\*",'*'},                    //multiply
+	{"\\/",'/'},                    //divide
+	{"\\(",'('},                    //left(
+	{"\\)",')'},                    //right)
+	{"&&",AND},                    //logical and
+	{"\\|\\|",OR},                  //logical or
+	{"!=",NEQ},                     //not equal
+	{"\\!",'!'},                    //logical not
+	{"\\$[a-zA-Z]+",REGISTER},      //register
+	{"0x[0-9A-Fa-f]+",HEXNUM},      //16nums
+	{"[0-9]+",DECNUM},              //10nums
+	{"\\*0x[0-9A-Fa-f]+",ADDRESS}  //address
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
