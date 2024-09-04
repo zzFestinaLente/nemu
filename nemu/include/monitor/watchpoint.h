@@ -6,8 +6,8 @@
 typedef struct watchpoint {
 	int NO;  //NO 表示监视点序号
 	struct watchpoint *next;  //尾指针
-    char cont[32];  //cont用来存储算数表达式的内容
-	uint32_t val;   //用来存储算数表达式的结果
+    char content[32];  //cont用来存储算数表达式的内容
+	uint32_t value;   //用来存储算数表达式的结果
 	/* TODO: Add more members if necessary */
 } WP;
 

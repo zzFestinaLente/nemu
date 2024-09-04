@@ -124,7 +124,7 @@ static int cmd_info(char *args) {
 	if (args[0] == 'w') {
 		WP *Wang = head;
 		while(Wang != NULL) {
-			printf("%d\t  %s\t  %d\t\n", Wang -> NO, Wang -> cont, Wang -> val);
+			printf("%d\t  %s\t  %d\t\n", Wang -> NO, Wang -> content, Wang -> value);
 			Wang = Wang -> next;
 		}
 	}
