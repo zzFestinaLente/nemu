@@ -105,24 +105,55 @@ static int cmd_info(char *args) {
 }
 
 static int cmd_x(char *args) {
-	char *argn = strtok(args, " ");
-	char *arga0 = strtok(NULL, "");
-
-	int len;
-	sscanf(argn, "%d", &len);
-
-	int ex=expr(arga0,0);
+	char *arg = strtok(NULL, " ");
+	int n;
+	swaddr_t addr;
 	int i;
-	for (i = 0; i < len; i++) {
-		if(i%4==0) printf("0x%x: ",ex+4*i);
-		printf("0x%08x  ", swaddr_read(ex+4*i, sizeof(ex)));
-	    if(i%4==3||i==len-1){
-           printf("\n");
-		}
-	}
 
+	if(arg != NULL) {
+		sscanf(arg, "%d", &n);
+
+		bool success;
+		addr = expr(arg + strlen(arg) + 1, &success);
+		if(success) { 
+			for(i = 0; i < n; i ++) {
+				if(i % 4 == 0) {
+					printf("0x%08x: ", addr);
+				}
+
+				printf("0x%08x ", swaddr_read(addr, 4));
+				addr += 4;
+				if(i % 4 == 3) {
+					printf("\n");
+				}
+			}
+			printf("\n");
+		}
+		else { printf("Bad expression\n"); }
+
+	}
 	return 0;
 }
+
+// static int cmd_x(char *args) {
+// 	char *argn = strtok(NULL, " ");
+// 	char *arga0 = strtok(NULL, "");
+
+// 	int len;
+// 	sscanf(argn, "%d", &len);
+
+// 	int ex=expr(arga0,0);
+// 	int i;
+// 	for (i = 0; i < len; i++) {
+// 		if(i%4==0) printf("0x%x: ",ex+4*i);
+// 		printf("0x%08x  ", swaddr_read(ex+4*i, sizeof(ex)));
+// 	    if(i%4==3||i==len-1){
+//            printf("\n");
+// 		}
+// 	}
+
+// 	return 0;
+// }
 
 void ui_mainloop() {
 	while(1) {
