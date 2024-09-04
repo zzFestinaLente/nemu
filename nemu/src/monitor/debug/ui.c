@@ -40,6 +40,13 @@ static int cmd_info(char *args);
 static int cmd_help(char *args);
 static int cmd_x(char *args);
 
+static int cmd_p(char *args) {
+	bool success = true;
+	int res = expr(args, &success);
+	printf("%d\n", res);
+	return 0;
+}
+
 static struct {
 	char *name;
 	char *description;
@@ -51,7 +58,7 @@ static struct {
 	{ "si", "Run the cpu_exec function for a specified number of steps", cmd_si},
 	{ "info", "Display the current values of all registers or watchpoints", cmd_info},
 	{ "x", "Print address content", cmd_x},
-
+	{ "p", "Evaluate and display the result of an expression", cmd_p},
 	/* TODO: Add more commands */
 
 };

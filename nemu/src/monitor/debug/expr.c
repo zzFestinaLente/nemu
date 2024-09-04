@@ -127,6 +127,117 @@ static bool make_token(char *e) {
 	return true; 
 }
 
+bool check_parentheses(int p, int q) {
+	int leftp = 0;
+	int i;
+	if (tokens[p].type != '(' || tokens[q].type != ')') {
+		return false;
+	}
+	else {
+		for (i = p; i <= q; i++) {
+			if (leftp == 0 && i != q && i != p)  return false;
+			if (tokens[i].type == '(')  leftp++;
+			if (tokens[i].type == ')')  leftp--; 
+		}
+		if (leftp == 0)  return true;
+		return false;
+	}
+}
+int prior(int ty) {
+	switch(ty) {
+		case '(': return 1;
+		case ')': return 1;
+		case '!': return 2;
+		case DEREF: return 2;
+		case NEGT: return 2;
+		case '*': return 3;
+		case '/': return 3;
+		case '+': return 4;
+		case '-': return 4;
+		case EQ: return 5;
+		case NEQ: return 5;
+		case AND: return 6;
+		case OR: return 7;
+	}
+	return 0;
+}
+int do_op(int p, int q) {
+	int op0 = 0;
+	int j, left = 0, cha0 = 0;
+	for (j = p; j <= q; j++) {
+		if (tokens[j].type == '(')  left++;
+		else if (tokens[j].type == ')')  left--;
+		else if (left == 0 && tokens[j].type != DECNUM && tokens[j].type != HEXNUM && tokens[j].type != ADDRESS && tokens[j].type != REGISTER) {
+			if (cha0 == 0) {
+				op0 = j;
+				cha0 = 1;
+			}
+			else {
+				if (prior(tokens[op0].type) <= prior(tokens[j].type)) {
+					op0 = j;
+				}
+			}
+		}
+	}
+	return op0;
+}
+int eval (int p, int q) {
+	int result;
+	if (p > q) {
+		assert(0);
+	}
+	else if (p == q) {
+		if (tokens[p].type == REGISTER) {
+			if (strcmp(tokens[p].str+1, "eip") == 0)  return cpu.eip;
+			int k;
+			for (k = 0; k < 8; k++) {
+				if (strcmp(tokens[p].str+1, regsl[k]) == 0)
+					return cpu.gpr[k]._32;
+			}
+		}
+		if (tokens[p].type == HEXNUM) {
+			sscanf(tokens[p].str, "%x", &result);
+			return result;
+		}
+		if (tokens[p].type == DECNUM) {
+			sscanf(tokens[p].str, "%d", &result);
+			return result;
+		}
+		if (tokens[p].type == ADDRESS) {
+			sscanf(tokens[p].str, "%x", &result);
+			return swaddr_read(result, 4);
+		}
+	}
+	else if (check_parentheses(p, q) == true) {
+		return eval(p + 1, q - 1);
+	}
+	else {
+		int op;
+		op = do_op(p, q);
+		//printf("&&&&&&&&&&&&&&&&&&&%d\n", op);
+		if (tokens[op].type == '!' || tokens[op].type == DEREF || tokens[op].type == NEGT) {
+			if (tokens[op].type == '!')  return !eval(op + 1, q);
+			if (tokens[op].type == DEREF)  return swaddr_read(eval(op + 1, q), 4);
+			if (tokens[op].type == NEGT)  return -eval(op + 1, q);
+		}
+		int val1 = eval(p, op - 1);
+		int val2 = eval(op + 1, q);
+  		switch (tokens[op].type) {
+			case '+': return val1 + val2;
+			case '-': return val1 - val2;
+			case '*': return val1 * val2;
+			case '/': return val1 / val2;
+			case EQ: return val1 == val2;
+			case AND: return val1 && val2;
+			case OR: return val1 || val2;
+			case NEQ: return val1 != val2;
+			default: assert(0);
+		}
+	}
+	return 0;
+}
+
+
 uint32_t expr(char *e, bool *success) {
 	if(!make_token(e)) {
 		*success = false;
