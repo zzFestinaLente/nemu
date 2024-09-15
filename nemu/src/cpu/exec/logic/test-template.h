@@ -5,7 +5,6 @@
 static void do_execute() {
     DATA_TYPE_S res = op_dest -> val & op_src -> val;
     update_eflags_pf_zf_sf(res);
-    //int len = (DATA_BYTE << 3) - 1;
 	cpu.eflags.CF = 0;
 	cpu.eflags.OF = 0;   
     print_asm_template2();

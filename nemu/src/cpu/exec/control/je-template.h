@@ -3,9 +3,6 @@
 #define instr je
 
 static void do_execute() {
-    //EIP ← EIP + SignExtend(rel8/16/32);
-    //IF OperandSize = 16
-    //THEN EIP ← EIP AND 0000FFFFH;
     DATA_TYPE_S imm = op_src -> val;
     print_asm("je %x", cpu.eip + 1 + DATA_BYTE + imm);
     if (cpu.eflags.ZF == 1) {
