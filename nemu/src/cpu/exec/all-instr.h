@@ -43,7 +43,7 @@
 #include"arith/cmp.h"
 #include"data-mov/pop.h"
 #include"control/ret.h"
-// #include"control/jbe.h"
+#include"control/jbe.h"
 // #include"arith/add.h"
 // #include"logic/setne.h"
 #include"logic/test.h"
