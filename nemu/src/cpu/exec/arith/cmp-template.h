@@ -3,27 +3,27 @@
 #define instr cmp
 
 // 封装标志位更新的宏
-#define UPDATE_PF(cha) do { \
-    cha ^= cha >> 4; \
-    cha ^= cha >> 2; \
-    cha ^= cha >> 1; \
-    cpu.eflags.PF = !(cha & 1); \
+#define UPDATE_PF(res) do { \
+    res ^= res >> 4; \
+    res ^= res >> 2; \
+    res ^= res >> 1; \
+    cpu.eflags.PF = !(res & 1); \
 } while(0)
 
-#define UPDATE_FLAGS(cha, dest, src, len) do { \
-    cpu.eflags.ZF = !(cha); \
-    cpu.eflags.SF = (cha) >> (len); \
+#define UPDATE_FLAGS(res, dest, src, len) do { \
+    cpu.eflags.ZF = !(res); \
+    cpu.eflags.SF = (res) >> (len); \
     cpu.eflags.CF = (dest) < (src); \
     int s1 = (dest) >> (len); \
     int s2 = (src) >> (len); \
     cpu.eflags.OF = (s1 != s2 && s2 == cpu.eflags.SF); \
-    UPDATE_PF(cha); \
+    UPDATE_PF(res); \
 } while(0)
 
 static void do_execute() {
-    DATA_TYPE_S cha = (DATA_TYPE_S)(op_dest->val) - (DATA_TYPE_S)(op_src->val);
+    DATA_TYPE_S res = (DATA_TYPE_S)(op_dest->val) - (DATA_TYPE_S)(op_src->val);
     int len = (DATA_BYTE << 3) - 1;
-    UPDATE_FLAGS(cha, op_dest->val, op_src->val, len);
+    UPDATE_FLAGS(res, op_dest->val, op_src->val, len);
     print_asm_template2();
 }
 
