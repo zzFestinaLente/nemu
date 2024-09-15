@@ -45,7 +45,7 @@
 #include"control/ret.h"
 #include"control/jbe.h"
 // #include"arith/add.h"
-// #include"logic/setne.h"
+#include"logic/setne.h"
 #include"logic/test.h"
 #include"data-mov/leave.h"
 // #include"control/jne.h"
