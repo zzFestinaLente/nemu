@@ -1,0 +1,12 @@
+#include "cpu/exec/template-start.h"
+
+#define instr js
+
+static void do_execute() {
+    print_asm("js %x", cpu.eip + 1 + DATA_BYTE + (DATA_TYPE_S)op_src -> val);
+    if (cpu.eflags.SF == 1) cpu.eip = cpu.eip + (DATA_TYPE_S)op_src -> val;
+}
+
+make_instr_helper(i)
+
+#include "cpu/exec/template-end.h"
