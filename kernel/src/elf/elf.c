@@ -31,24 +31,29 @@ uint32_t loader() {
 	elf = (void*)buf;
 
 	/* TODO: fix the magic number with the correct one */
-	const uint32_t elf_magic = 0xBadC0de;
+	const uint32_t elf_magic = 0x464c457f;
 	uint32_t *p_magic = (void *)buf;
 	nemu_assert(*p_magic == elf_magic);
 
 	/* Load each program segment */
-	panic("please implement me");
-	for(; true; ) {
-		/* Scan the program header table, load each segment into memory */
-		if(ph->p_type == PT_LOAD) {
+	// panic("please implement me");
+	Elf32_Phdr *program_headers = (Elf32_Phdr *)(buf + elf->e_phoff);
+	int i;
+	for (int i = 0; i < elf->e_phnum; i++) {
+		Elf32_Phdr *current_ph = &program_headers[i];
+		
+		if (current_ph->p_type == PT_LOAD) {
+			void *dest = (void *)current_ph->p_vaddr;
+			size_t file_size = current_ph->p_filesz;
+			size_t mem_size = current_ph->p_memsz;
+			
+			ramdisk_read(dest, current_ph->p_offset, file_size);
+			
+			if (mem_size > file_size) {
+				size_t zero_fill_size = mem_size - file_size;
+				memset(dest + file_size, 0, zero_fill_size);
+			}
 
-			/* TODO: read the content of the segment from the ELF file 
-			 * to the memory region [VirtAddr, VirtAddr + FileSiz)
-			 */
-			 
-			 
-			/* TODO: zero the memory region 
-			 * [VirtAddr + FileSiz, VirtAddr + MemSiz)
-			 */
 
 
 #ifdef IA32_PAGE
