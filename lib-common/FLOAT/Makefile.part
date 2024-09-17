@@ -9,8 +9,17 @@ $(FLOAT): $(FLOAT_A_OBJ)
 	ar r $@ $^
 
 # TODO: complete the following rules
+FLOAT_DIR := obj/lib-common/FLOAT
+FLOAT_SRC := lib-common/FLOAT
 
-$(FLOAT_O):
+FLOAT_CFLAGS := -O2 -m32 -fno-builtin -fno-stack-protector \
+                -D_FORTIFY_SOURCE=0 -march=i386 -mtune=i386
 
-$(FLOAT_VFPRINTF_O):
+FLOAT_OBJS := $(FLOAT_DIR)/FLOAT.o $(FLOAT_DIR)/FLOAT_vfprintf.o
+
+$(FLOAT_DIR)/%.o: $(FLOAT_SRC)/%.c
+	@mkdir -p $(FLOAT_DIR)
+	$(CC) $(FLOAT_CFLAGS) -c $< -o $@ -Ilib-common
+
+float: $(FLOAT_OBJS)
 
