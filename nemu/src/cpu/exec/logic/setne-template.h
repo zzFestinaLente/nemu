@@ -3,12 +3,7 @@
 #define instr setne
 
 static void do_execute() {
-    //DATA_TYPE_S imm = op_src -> val;
-    if (cpu.eflags.ZF == 0) {
-        //cpu.eip = cpu.eip + imm;
-        OPERAND_W (op_src, 1);
-    }
-    else OPERAND_W (op_src, 0);//???
+    OPERAND_W (op_src, !cpu.eflags.ZF);
     print_asm_template1();
 }
 
