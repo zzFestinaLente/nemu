@@ -57,7 +57,7 @@
 #include"control/jg.h"
 #include"control/jl.h"
 #include"control/js.h"
-// #include"control/jns.h"
+#include"control/jns.h"
 #include"control/jge.h"
 #include"control/ja.h"
 #include"string/lods.h"
