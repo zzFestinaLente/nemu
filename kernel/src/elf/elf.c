@@ -18,7 +18,7 @@ uint32_t get_ucr3();
 
 uint32_t loader() {
 	Elf32_Ehdr *elf;
-	// Elf32_Phdr *ph = NULL;
+	Elf32_Phdr *ph = NULL;
 
 	uint8_t buf[4096];
 
@@ -37,22 +37,13 @@ uint32_t loader() {
 
 	/* Load each program segment */
 	// panic("please implement me");
-	Elf32_Phdr *program_headers = (Elf32_Phdr *)(buf + elf->e_phoff);
+	ph = (void *)(buf + elf -> e_phoff);
 	int i;
-	for (i = 0; i < elf->e_phnum; i++) {
-		Elf32_Phdr *current_ph = &program_headers[i];
-		
-		if (current_ph->p_type == PT_LOAD) {
-			void *dest = (void *)current_ph->p_vaddr;
-			size_t file_size = current_ph->p_filesz;
-			size_t mem_size = current_ph->p_memsz;
-			
-			ramdisk_read(dest, current_ph->p_offset, file_size);
-			
-			if (mem_size > file_size) {
-				size_t zero_fill_size = mem_size - file_size;
-				memset(dest + file_size, 0, zero_fill_size);
-			}
+	for(i = 0; i < elf -> e_phnum; i++) {
+		if(ph->p_type == PT_LOAD) {
+			ramdisk_read((void *)(ph -> p_vaddr), ph -> p_offset, ph -> p_filesz);
+            memset((void *)(ph -> p_vaddr + ph -> p_filesz), 0, ph -> p_memsz - ph -> p_filesz);
+			ph++;
 
 
 
