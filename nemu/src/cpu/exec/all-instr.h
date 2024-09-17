@@ -49,3 +49,6 @@
 #include"logic/test.h"
 #include"data-mov/leave.h"
 #include"control/jle.h"
+#include"control/jl.h"
+#include"control/jg.h"
+#include"control/jne.h"
