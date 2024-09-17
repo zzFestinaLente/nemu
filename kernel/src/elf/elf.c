@@ -18,7 +18,7 @@ uint32_t get_ucr3();
 
 uint32_t loader() {
 	Elf32_Ehdr *elf;
-	Elf32_Phdr *ph = NULL;
+	// Elf32_Phdr *ph = NULL;
 
 	uint8_t buf[4096];
 
@@ -39,7 +39,7 @@ uint32_t loader() {
 	// panic("please implement me");
 	Elf32_Phdr *program_headers = (Elf32_Phdr *)(buf + elf->e_phoff);
 	int i;
-	for (int i = 0; i < elf->e_phnum; i++) {
+	for (i = 0; i < elf->e_phnum; i++) {
 		Elf32_Phdr *current_ph = &program_headers[i];
 		
 		if (current_ph->p_type == PT_LOAD) {
