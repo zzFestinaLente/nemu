@@ -4,14 +4,16 @@
  * Type 'man regex' for more information about POSIX regex functions.
  */
 #include <sys/types.h>
+#include <stdlib.h>
+#include <elf.h>
 #include <regex.h>
-
+uint32_t getvar(char* str);
 enum {
 	NOTYPE = 256, 
 	//added token type
 	EQ,AND,OR,
 	ADDRESS,DEREF,NEGT,
-	NEQ,REGISTER,HEXNUM,DECNUM
+	NEQ,REGISTER,HEXNUM,DECNUM,VAR
 	/* TODO: Add more token types */
 
 };
@@ -41,6 +43,7 @@ static struct rule {
 	{"0x[0-9A-Fa-f]+", HEXNUM},     // 16进制数字，如 0x1A3F
 	{"[0-9]+", DECNUM},             // 10进制数字，如 123
 	{"\\*0x[0-9A-Fa-f]+", ADDRESS}, // 地址解引用，*0x1234
+    {"\\b[0-9a-zA-Z_]+\\b", VAR}
 };
 
 #define NR_REGEX (sizeof(rules) / sizeof(rules[0]) )
@@ -167,6 +170,8 @@ int evaluate(int p, int q) {
     } 
 	if (p == q) {
         switch (tokens[p].type) {
+            case VAR:
+                return getvar(tokens[p].str);
             case REGISTER:
                 if (strcmp(tokens[p].str + 1, "eip") == 0) {
 					return cpu.eip;

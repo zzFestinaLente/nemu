@@ -2,14 +2,12 @@
 #include "monitor/expr.h"
 #include "monitor/watchpoint.h"
 #include "nemu.h"
-
 #include <stdlib.h>
 #include <readline/readline.h>
 #include <readline/history.h>
 #define NR_WP 32
 static WP *head;
 void cpu_exec(uint32_t);
-
 /* We use the `readline' library to provide more flexibility to read from stdin. */
 char* rl_gets() {
 	static char *line_read = NULL;
@@ -40,7 +38,6 @@ static int cmd_si(char *args);
 static int cmd_info(char *args);
 static int cmd_help(char *args);
 static int cmd_x(char *args);
-
 static int cmd_p(char *args) {
 	bool success = true;
 	int res = expr(args, &success);

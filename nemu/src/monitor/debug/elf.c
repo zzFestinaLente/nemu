@@ -80,4 +80,26 @@ void load_elf_tables(int argc, char *argv[]) {
 
 	fclose(fp);
 }
+uint32_t getvar(const char *var_name) {
 
+    
+    if (!var_name) {
+        return 0;
+    }
+
+    size_t name_len = strlen(var_name);
+    int i;
+    for (i = 0; i < nr_symtab_entry; i++) {
+        if ((symtab[i].st_info & 0xf) != STT_OBJECT) {
+            continue;
+        }
+        
+        const char *sym_name = strtab + symtab[i].st_name;
+        if (strncmp(var_name, sym_name, name_len) == 0 && sym_name[name_len] == '\0') {
+
+            return symtab[i].st_value;
+        }
+    }
+    
+    return 0;
+}
