@@ -48,3 +48,4 @@
 #include"logic/setne.h"
 #include"logic/test.h"
 #include"data-mov/leave.h"
+#include"control/jle.h"
